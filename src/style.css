@@ -26,3 +26,8 @@ html{min-height:100%;-webkit-text-size-adjust:100%}body{min-height:100%;overflow
  .heading-row:has(+ .coach-layout){margin-bottom:12px}
  .heading-row:has(+ .coach-layout) h1{font-size:23px}
 }
+
+/* PocketWise native voice entry */
+.voice-shortcut{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;}
+.voice-shortcut button{display:inline-flex;align-items:center;gap:7px;min-height:42px;}
+.voice-shortcut small{color:var(--muted,#788b82);font-size:11px;}
