@@ -62,7 +62,9 @@ public class VoicePlugin extends Plugin {
                 });
                 Intent intent=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,Locale.getDefault().toLanguageTag());
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"fil-PH");
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,"ceb-PH");
+                intent.putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES",new String[]{"ceb-PH","fil-PH","en-PH"});
                 intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE,true);
                 recognizer.startListening(intent);
             }catch(Exception e){finish(null,"Could not start offline speech recognition: "+e.getMessage());}

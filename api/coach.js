@@ -1,5 +1,15 @@
 // Pocketwise server-side Gemini assistant. Only proposes actions; never writes local data.
 const MAX_BODY = 18000;
+const rateMap = new Map();
+function isRateLimited(ip) {
+  const now = Date.now();
+  const timestamps = (rateMap.get(ip) || []).filter(t => now - t < 60000);
+  if (timestamps.length >= 15) return true;
+  timestamps.push(now);
+  rateMap.set(ip, timestamps);
+  if (rateMap.size > 1000) rateMap.clear();
+  return false;
+}
 const declarations = [
   {name:'add_income',description:'Prepare a new income or allowance record. Never claim it was saved.',parameters:{type:'OBJECT',properties:{amount:{type:'NUMBER',description:'Amount in Philippine pesos, not centavos'},label:{type:'STRING',description:'Income source, e.g. allowance'}},required:['amount']}},
   {name:'add_expense',description:'Prepare an expense record. Choose needs for essential expenses and wants for optional purchases. Ask a clarifying question if category is uncertain.',parameters:{type:'OBJECT',properties:{amount:{type:'NUMBER',description:'Amount in Philippine pesos'},bucket:{type:'STRING',enum:['needs','wants']},label:{type:'STRING',description:'What was purchased'}},required:['amount','bucket','label']}},
@@ -8,6 +18,11 @@ const declarations = [
 export default async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
+  const origin = req.headers['origin'] || req.headers['referer'];
+  const host = req.headers['host'];
+  if(origin && host && !origin.includes(host) && !origin.includes('localhost') && !origin.includes('127.0.0.1')) return res.status(403).json({error:'Forbidden'});
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+  if(isRateLimited(ip)) return res.status(429).json({error:'Too many requests. Please wait a moment.'});
   const key=process.env.GEMINI_API_KEY;
   if(!key)return res.status(503).json({error:'Cloud AI is not configured'});
   try{
